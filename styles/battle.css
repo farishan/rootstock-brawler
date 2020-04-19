@@ -1,0 +1,123 @@
+.stamina-bar {
+	background-color: lightgreen;
+}
+
+.health-bar {
+	background-color: pink;
+}
+
+.battle-area {
+	display: flex;
+	justify-content: space-around;
+}
+
+.char-area {
+	height: 200px;
+	position: relative;
+	border: 1px solid black;
+	width: 45%;
+	display: inline-block;
+}
+
+.char-area .stamina-bar {
+	margin: 0;
+	position: absolute;
+	left: 15px;
+	bottom: 15px;
+	width: 15px;
+	height: 100px;
+}
+
+.char-area .stamina-bar span.stamina {
+	margin: 0;
+	position: absolute;
+	left: 18%;
+	bottom: 2px;
+	width: 60%;
+	height: 100%;
+	background-color: darkgreen;
+	z-index: 2;
+	transition: .2s ease-in-out;
+}
+
+.char-area .health-bar span.health {
+	margin: 0;
+	position: absolute;
+	left: 20%;
+	bottom: 2px;
+	width: 60%;
+	height: 100%;
+	background-color: maroon;
+	z-index: 2;
+	transition: .2s ease-in-out;
+}
+
+.char-area .health-bar {
+	margin: 0;
+	position: absolute;
+	left: 35px;
+	bottom: 15px;
+	width: 15px;
+	height: 100px;
+}
+
+.enemy-area {
+	height: 200px;
+	position: relative;
+	border: 1px solid black;
+	width: 45%;
+	display: inline-block;
+}
+
+.enemy-area .stamina-bar {
+	margin: 0;
+	position: absolute;
+	right: 15px;
+	bottom: 15px;
+	width: 15px;
+	height: 100px;
+}
+
+.enemy-area .stamina-bar span.stamina {
+	margin: 0;
+	position: absolute;
+	right: 20%;
+	bottom: 2px;
+	width: 60%;
+	height: 100%;
+	background-color: darkgreen;
+	z-index: 2;
+	transition: .2s ease-in-out;
+}
+
+.enemy-area .health-bar span.health {
+	margin: 0;
+	position: absolute;
+	right: 20%;
+	bottom: 2px;
+	width: 60%;
+	height: 100%;
+	background-color: maroon;
+	z-index: 2;
+	transition: .2s ease-in-out;
+}
+
+.enemy-area .health-bar {
+	margin: 0;
+	position: absolute;
+	right: 35px;
+	bottom: 15px;
+	width: 15px;
+	height: 100px;
+}
+
+.battle-log {
+	margin-top: 2rem;
+	font-size: 0.8em;
+	height: 200px;
+	overflow: scroll;
+}
+
+.battle-log li {
+	margin: .25rem 0;
+}

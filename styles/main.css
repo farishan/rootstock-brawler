@@ -1,0 +1,66 @@
+/*PAGE*/
+.splash-screen {
+	background-color: rgba(255,255,255,1);
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 12;
+}
+.alert {
+	background-color: rgba(255,255,255,1);
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	width: 50%;
+	height: 50%;
+	z-index: 11;
+}
+.black-layer {
+	background-color: rgba(0,0,0,0.5);
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 9;
+}
+.popup {
+	background-color: rgba(255,255,255,1);
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	width: 50%;
+	height: 50%;
+	z-index: 10;
+}
+.environment {
+	position: relative;
+	border: 1px solid #aaa;
+	padding: .5rem;
+}
+
+.environment .layer {
+	background-color: rgba(255, 255, 255, 0.9);
+	position: absolute;
+	z-index: 10;
+	left: 5%;
+	top: 5%;
+	width: 90%;
+}
+
+.char-display {
+	border: 1px solid #aaa;
+	width: 30%;
+	margin: 1rem auto;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
+}

@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Rootstock Brawler</title>
+	<!-- <link rel="stylesheet" href="styles/reset.css"> -->
+	<link rel="stylesheet" href="styles/normalize.css">
+	<link rel="stylesheet" href="styles/framework.css">
+	<link rel="stylesheet" href="styles/main.css">
+	<link rel="stylesheet" href="styles/dev.css">
+	<link rel="stylesheet" href="styles/battle.css">
+</head>
+<body>
+<div id="app">
+<!-- ============================================================== -->
+<!-- @click="blackLayer=false;
+	mainMenuPopup=false;
+	mainMenuAlert=false;" -->
+<div 
+	class="black-layer" 
+	v-show="blackLayer"
+></div>
+<div class="splash-screen" v-show="loading"></div>
+
+<!-- DEV ONLY -->
+<div class="dev" v-show="dev">
+	<div>
+		<small>env: {{environment}}</small><br>
+		<small>dialogue: {{dialogue}}</small><br>
+		<small>train: {{train}}</small><br>
+		<small v-if="slot && slot.char">{{slot.char.name}}</small><br>
+	</div>
+	
+	<div>
+		<template v-for="env in environments" >
+			<button @click="environment=env.name">{{env.name}}</button>
+		</template>
+	</div>
+
+	<div>
+		<button @click="tutorial=!tutorial">tutorial: {{tutorial}}</button>
+		<button onclick="window.location.reload()">reload</button>
+		<button onclick="localStorage.removeItem('rootstock-brawler-data')">erase</button>
+	</div>
+</div>
+
+<!-- Main Menu -->
+<div class="environment" v-show="environment=='main-menu'">
+	<div class="text-center my-3">
+		<!-- <h1 style="margin-bottom: 0">Rootstock Brawler</h1> -->
+		<img class="logo" src="images/logo.png" alt="Rootstock Brawler" draggable="false">
+		<p style="margin-top: 0; text-transform: uppercase; letter-spacing: 3px"><small>wandering to win</small></p>
+	</div>
+
+	<div class="text-center my-5">
+		<button @click="mainMenuPopup=true;blackLayer=true">PLAY</button>
+	</div>
+</div>
+
+<!-- Main Menu - Popup -->
+<div class="popup text-center p-3" v-show="mainMenuPopup">
+	<button class="close-btn" @click="close">&times;</button>
+	<div v-if="char && char.name && char.level && char.type=='player'">
+		<p>{{char.name}}, Lv {{char.level}}</p>
+		<button @click="continueGame" v-show="slot">Continue</button>
+		<hr>
+	</div>
+	<button @click="checkSlot">New Game</button>
+</div>
+
+<!-- Main Menu - Alert -->
+<div class="alert" v-show="mainMenuAlert">
+	Are you sure you want to delete the current save file? <br>
+	<button @click="newGame">ok</button>
+	<button @click="mainMenuAlert=false">cancel</button>
+</div>
+
+<!-- Create Character -->
+<div class="environment" v-show="environment=='create-char'">
+	<!-- <button @click="environment='main-menu'">Main Menu</button> -->
+	<h1 class="text-center">Create Character</h1>
+
+	<div class="text-center">
+		<div>
+			<!-- Select Hair Style -->
+			<label for="hairStyle">Hair Style</label><br>
+			<select name="hair" id="hairStyle">
+				<template v-for="hair in hairs">
+					<option :value="hair">{{hair}}</option>
+				</template>
+			</select>
+		</div>
+		<div>
+			<!-- Select Hair Color -->
+			<label for="hairStyle">Hair Color</label><br>
+			<select name="hair_color" id="hairColor">
+				<template v-for="color in colors">
+					<option :value="color">{{color}}</option>
+				</template>
+			</select>
+		</div>
+	</div>
+	
+	<div class="char-display">
+		<!-- Hair Display -->
+	</div>
+
+	<div class="text-right">
+		<button @click="createRandom()">random</button>
+		<button @click="newGame">ok</button>
+	</div>
+</div>
+
+<!-- 
+
+	Story Begin.
+
+	- ayah nyuruh anaknya belajar di rootstock
+	- anaknya nurut, terus ditato (bagian tangan) sama bapaknya
+	- pamit sama ortunya
+	- perjalanan
+	- istirahat di bawah pohon, tatonya nyala
+	- kenalan sama Rùh, ditanyain NAMA
+	- tanya2 tentang rootstock, intinya harus belajar brawling
+	- liat plang 'ke Rootstock'
+	- sampai di gerbang rootstock
+	- tutorial brawling, ke Realm
+
+ -->
+
+<!-- 1st dialogue: Prologue -->
+<div class="environment" v-show="tutorial && dialogue=='prologue' && !tutorialEnd">
+	<p>Dad : "Son, the time has come. You should go to Rootstock."</p>
+	<p>... : "Rootstock? What is that?"</p>
+	<p>Dad : "Don't ask. I will draw your first tattoo tomorrow. Are you ready for that?"</p>
+	<p>... : "Really?? Yes, i am!"</p>
+	
+	<p>#tattoo dialogue</p>
+
+	<p>#farewell</p>
+
+	<p><button @click="dialogue='ruh'">start the journey</button></p>
+	<p><button @click="dialogue='rootstock'; environment='town'">skip</button></p>
+</div>
+
+<!-- 2nd dialogue: Rùh -->
+<div class="environment" v-show="dialogue=='ruh' && !tutorialEnd">
+	<p>#3 days later, under the Sacred Tree</p>
+
+	<p>... : "Oh, God. I'm so tired."</p>
+	
+	<p>#a mark on the tree glowing</p>
+
+	<p>#{{npc.tutorial.name}} showed up</p>
+
+	<p>{{npc.tutorial.name}} : "Whh. Umm, hello? I am {{npc.tutorial.name}}. Who are you?"</p>
+	
+	<hr>
+	<p>
+		<label>Enter your name</label><br>
+		<input type="text" placeholder="name" v-model="char.name">
+	</p>
+	<hr>
+
+	<p>{{npc.tutorial.name}} : "I see a #first tatoo name#. Going to Rootstock?"</p>
+
+	<p>... : "Yeah. Do you know where it is?"</p>
+
+	<p>{{npc.tutorial.name}} : "Of course. I will bring you there."</p>
+
+	<p><button @click="dialogue='rootstock';environment='town';blackLayer=true">Continue to Rootstock</button></p>
+</div>
+
+<!-- Town -->
+<div class="environment" v-show="environment=='town'">
+	<h1>{{town.name}} Town</h1>
+	<button @click="environment='realm'" ref="realm">Realm of Rootstock</button>
+	<button @click="environment='train'" ref="training" v-show="dialogue!='first-battle'">Training Ground</button>
+	<button 
+		@click="environment='hermitage'" 
+		ref="hermitage" 
+		title="Your stats" 
+		v-show="dialogue!='first-battle' && dialogue!='first-training'"
+		>Abandoned Hermitage
+	</button>
+	<button 
+		@click="environment='shop'" 
+		ref="shop" 
+		v-show="dialogue!='first-battle' && dialogue!='first-training'"
+		>General Shop
+	</button>
+	<button 
+		@click="environment='tattoo'" 
+		ref="tattoo" 
+		v-show="dialogue!='first-battle' && dialogue!='first-training'"
+		>Tattoo Hut
+	</button>
+
+	<!-- Tutorial Layer -->
+	<div class="layer" v-show="tutorial && dialogue=='rootstock' && !tutorialEnd">
+		<!-- 3rd dialogue: Rootstock -->
+		<div class="environment">
+			<p>{{npc.tutorial.name}} : "Rootstock. Do you know about this town?"</p>
+			<p>{{char.name}} : "I don't."</p>
+			<p>{{npc.tutorial.name}} : "It's all about brawling in the Realm. The people here just want to be rich and famous. ...Or quite dead. Do you brawl?"</p>
+			<p>{{char.name}} : "Umm..."</p>
+			<p>{{npc.tutorial.name}} : "Let's go to the Realm. Show me what you can do!"</p>
+		</div>
+		<button @click="blackLayer=false; dialogue='first-battle'">OK</button>
+	</div>
+
+	<!-- Tutorial End -->
+	<div class="layer" v-show="tutorial && dialogue=='tutorial-end'">
+		<p>{{npc.tutorial.name}} : "Congratulations for your first brawl victory. I should go back to my Sacred Tree. So, listen. Keep learning and you will understand the world better. Until we meet again, {{char.name}}."</p>
+		
+		<button @click="tutorial=false;blackLayer=false;dialogue='';tutorialEnd=true">Wave hands.</button>
+	</div>
+</div>
+
+<!-- Realm -->
+<div class="environment" v-show="environment=='realm'">
+	<button @click="environment='town'" v-show="!tutorial">back to town</button>
+	<h1>Realm of Rootstock</h1>
+	<p>Select a battle</p>
+	<div class="stage-list" v-if="!tutorialEnd">
+		<button @click="match(battles[0])">{{battles[0].id}}</button>
+	</div>
+	<div class="stage-list" v-else>
+		<template v-for="(battle,key) in battles">
+			<button :key="key" @click="match(battle)">{{battle.id}}</button>
+		</template>
+	</div>
+</div>
+
+<!-- Hermitage -->
+<div class="environment" v-show="environment=='hermitage'">
+	<button @click="environment='town'">back to town</button>
+	<h1>Abandoned Hermitage</h1>
+	<hr>
+	<div class="bordered">
+		<h4 v-if="char && char.name">{{char.name}}</h4>
+		<p v-if="char && char.health">Health: {{char.health}}</p>
+		<p v-if="char && char.stamina">Stamina: {{char.stamina}}</p>
+		<p v-if="char && char.damage">Damage: {{char.damage}}</p>
+		<p v-if="char && char.speed">Speed: {{char.raw_speed}}</p>
+	</div>
+
+	<hr>
+	<div class="bordered my-3">
+		<p v-if="char && char.coin && char.coin.silver">{{char.coin.silver}} silver</p>
+		<p v-if="char && char.coin && char.coin.gold">{{char.coin.gold}} gold</p>
+	</div>
+</div>
+
+<!-- Shop -->
+<div class="environment" v-show="environment=='shop'">
+	<button @click="environment='town'">back to town</button>
+	<h1>General Shop</h1>
+	<hr>
+	<p v-if="char && char.coin && char.coin.silver">Your silver: {{char.coin.silver}}</p>
+	<p v-if="char && char.coin && char.coin.gold">Your gold: {{char.coin.gold}}</p>
+	<h3>buy</h3>
+	<button disabled>Cloth Handwraps</button>
+</div>
+
+<!-- Tattoo -->
+<div class="environment" v-show="environment=='tattoo'">
+	<button @click="environment='town'">back to town</button>
+	<h1>Tattoo Hut</h1>
+	<hr>
+	<button disabled>Second Tattoo</button>
+</div>
+
+<!-- Train -->
+<div class="environment" v-show="environment=='train'">
+	<button @click="environment='town'" v-show="!tutorial && dialogue!='train'">back to town</button>
+	<h1>Training Ground</h1>
+	<button @click="training('brawn')">brawn</button>
+	<button @click="training('defense')" ref="defense">defense</button>
+	<button @click="training('quickness')" ref="quickness">quickness</button>
+	<button @click="training('accuracy')" ref="accuracy">accuracy</button>
+	<button @click="training('critical')" ref="critical">critical</button>
+</div>
+
+<!-- Train: brawn -->
+<div class="environment" v-show="train=='brawn'">
+	<h5>Brawn Training</h5>
+	press <span class="bordered">Q</span> to train the left hand.
+	press <span class="bordered">E</span> to train the right hand.
+	<template v-if="tutorial && !tutorialEnd">
+		<button @click="dialogue='first-training-end'; blackLayer=true; char.damage += 50">Gain 50 Dmg</button>
+	</template>
+	<template v-else>
+		<button @click="char.damage += 10; environment='town'; train='';">Gain 10 dmg</button>
+	</template>
+
+	<!-- Tutorial Dialogue -->
+	<div class="layer" v-show="dialogue=='first-training-end' && !tutorialEnd">
+		<p>Rùh : "Now you should be able to revenge. Let's go back to the Realm."</p>
+		<br>
+		<button 
+			@click="environment='town';
+			blackLayer=false;
+			dialogue='second-battle';
+			train=''"
+		>OK</button>
+	</div>
+</div>
+
+<!-- Battle -->
+<div class="environment" v-show="environment=='battle'">
+	<!-- <button @click="environment='town'">town</button> -->
+	<!-- battle id: {{selectedBattle.id}} -->
+	
+	<!-- Start Count -->
+	<div class="text-center my-3">
+		<h1>
+		<template v-if="battleStartCount===3">Stand by ...</template>
+		<template v-if="battleStartCount===2">Get ready ...</template>
+		<template v-if="battleStartCount===1"><small>and ...</small></template>
+		<template v-if="battleStartCount===0">BRAWL!</template>
+		</h1>
+	</div>
+
+	<div class="battle-area">
+		<div class="char-area">
+			<h3 class="text-center">{{selectedChar.name}}</h3>
+			<p class="stamina-bar">
+				<span class="stamina" ref="charStamina"></span>
+			</p>
+			<p class="health-bar">
+				<span class="health" ref="charHealth"></span>
+			</p>
+		</div>
+
+		<div class="enemy-area" v-if="selectedBattle && selectedBattle.enemy">
+			<h3 class="text-center">{{selectedEnemy.name}}</h3>
+			
+			<p class="stamina-bar">
+				<span class="stamina" ref="enemyStamina"></span>
+			</p>
+			<p class="health-bar">
+				<span class="health" ref="enemyHealth"></span>
+			</p>
+		</div>
+	</div>
+
+	<div class="battle-log" ref="battleLog">
+		<ul>
+			<li v-for="log in battleLogs">{{log}}</li>
+		</ul>
+	</div>
+
+	<!-- Tutorial Layer -->
+	<div class="layer" v-show="tutorial && dialogue=='first-training' && !tutorialEnd">
+		<!-- 4th dialogue: First Training -->
+		<div class="environment" v-show="dialogue=='first-training'">
+			<p>{{npc.tutorial.name}} : "You've been beaten."</p>
+			<p>{{char.name}} : "Ugh..."</p>
+			<p>{{npc.tutorial.name}} : "Okay, don't worry! Meet me in the Training room."</p>
+		</div>
+		<button @click="blackLayer=false;environment='town'">OK</button>
+	</div>
+
+	<!-- **Battle result pakai vue component aja (?) -->
+	<div class="popup" v-show="dialogue=='battle-result'">
+		<div class="text-center" v-if="battleResult">
+			<div v-if="battleResult.winner">
+				<small v-if="battleResult.winner.name == char.name">You Win!</small>
+				<small v-else>You Lost...</small>
+				<h1>Winner: {{battleResult.winner.name}}</h1>
+			</div>
+			<hr>
+			<div v-if="battleResult.log && battleResult.log.punch">Punches: {{battleResult.log.punch}}</div>
+		</div>
+
+		<div class="text-center">
+			<template v-if="tutorial">
+				<button class="my-5" @click="environment='town';dialogue='tutorial-end'">ok</button>
+			</template>
+			<template v-else>
+				<button class="my-5" @click="environment='town'; blackLayer=false; dialogue=''; resetBattle()">ok</button>
+			</template>
+		</div>
+	</div>
+</div>
+
+<!-- ============================================================== -->
+
+<!-- Tutorial -->
+<div class="environment" v-show="environment=='tutorial'">
+	<div></div>
+	<button>skip tutorial</button>
+
+	<!-- **go to town -->
+	<!-- **call action to click arena -->
+
+	<!-- select battle: the newbies -->
+
+	<!-- bisa bunuh 1 monster, yang kedua kalah -->
+
+	<!-- You've been beaten by a mole! A MOLE! -->
+	<!-- Okay, don't worry! Meet me in the Training room. -->
+	
+	<!-- **go to town -->
+	<!-- **call action to click Training room -->
+
+	<!-- This place is gloomy. Take these Soulings(money) and upgrade the room, please -->
+	<!-- **call action to click upgrade room (2x sampai jendela terbuka)-->
+
+	<!-- That's better. Let's train your brawn for a bit! -->
+
+	<!-- **Beli brawn -->
+
+	<!-- LATIAN STRENGH -->
+
+	<!-- Good! You look strong enough to face that mole now. -->
+
+	<!-- **back to town -->
+	<!-- **CTA Arena -->
+	<!-- **CTA Battle: the newbies -->
+
+	<!-- Battle! kalah sama moskito king -->
+
+	<!-- Darn it! This Moskito King is fierce! We need to work on your defense. -->
+	<!-- **langsung switch ke training room -->
+
+	<!-- Buy the Block training and practice a bit. -->
+	<!-- You just gained a level! Let's see what you've trained -->
+
+	<!-- CTA Hero (profile) -->
+	<!-- Excellent! You have a new skill to use in combat. -->
+	<!-- Now use the points you earned to increase your Block even more -->
+
+	<!-- Okay! It's shopping time. -->
+	<!-- ** go to shop -->
+	<!-- Here, buy yourself a Weapon, a Shield, and some Armor. -->
+	<!-- Now go beat that stupid insect! -->
+
+	<!-- **back to town -->
+	<!-- **CTA Arena -->
+	<!-- **CTA Battle: the newbies -->
+
+	<!-- Congratulations! That was epic! Well, not really, but still... -->
+	<!-- That is all. You are on your own now. Good luck! -->
+	<!-- Sir Scarow... OUT! -->
+
+	<!-- **show HOME, MUSEUM -->
+</div>
+</div> <!-- div#app end -->
+<script type="text/javascript" src="scripts/vue.js"></script>
+<script type="text/javascript" src="scripts/database.js"></script>
+<script type="text/javascript" src="scripts/npc.js"></script>
+<script type="text/javascript" src="scripts/battles.js"></script>
+<script type="text/javascript" src="scripts/battle.js"></script>
+<script type="text/javascript" src="scripts/main.js"></script>
+<script>
+	var buttons = document.querySelectorAll('button');
+	var hover = new Audio('audio/hover.wav');
+	hover.volume = 0.1;
+	var click = new Audio('audio/click.wav');
+	click.volume = 0.3;
+	buttons.forEach(function(button){
+		button.addEventListener('mouseover', function(){
+			button.setAttribute('style', 'transform: scale(1.025)')
+			hover.play();
+		});
+		button.addEventListener('mouseout', function(){
+			button.setAttribute('style', 'transform: scale(1)')
+			hover.play();
+		});
+		button.addEventListener('click', function(){
+			click.play();
+		});
+	});
+</script>
+</body>
+</html>

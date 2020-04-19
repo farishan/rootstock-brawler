@@ -1,0 +1,15 @@
+.dev {
+	background-color: #eee;
+	position: fixed;
+	left: 0;
+	top: 0;
+}
+
+.dev button {
+	padding: 0;
+	display: block;
+}
+
+.dev div {
+	margin: .5rem 0;
+}
